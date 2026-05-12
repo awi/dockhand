@@ -76,8 +76,19 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && cp "$(dpkg -L libnss-wrapper | grep 'libnss_wrapper\.so$')" /usr/local/lib/libnss_wrapper.so
 
 # Copy package files and install dependencies (--ignore-scripts blocks malicious postinstall hooks)
-COPY package.json package-lock.json ./
-RUN MAKEFLAGS="-j$(nproc)" npm ci --ignore-scripts \
+#COPY package.json package-lock.json ./
+# Use a wildcard to copy whatever lockfile exists (npm or bun)
+COPY package.json bun.lockb* package-lock.json* ./
+
+# Add this line BEFORE your npm ci / rebuild step
+# Use apt-get instead of apk for node:24-slim
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 \
+    make \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN MAKEFLAGS="-j$(nproc)" npm install --ignore-scripts \
     && MAKEFLAGS="-j$(nproc)" npm rebuild better-sqlite3 argon2
 
 # Copy source code and build
