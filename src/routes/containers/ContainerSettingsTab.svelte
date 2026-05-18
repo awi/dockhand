@@ -5,7 +5,9 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { TogglePill, ToggleGroup } from '$lib/components/ui/toggle-pill';
-	import { Plus, Trash2, Settings2, RefreshCw, Network, X, Ban, RotateCw, AlertTriangle, PauseCircle, Share2, Server, CircleOff, ChevronDown, ChevronRight, Cpu, Shield, HeartPulse, Wifi, HardDrive, Lock, Loader2, CheckCircle2, Package, Gpu } from 'lucide-svelte';
+	import { Plus, Trash2, Settings2, RefreshCw, Network, X, Ban, RotateCw, AlertTriangle, PauseCircle, Share2, Server, CircleOff, ChevronDown, ChevronRight, Cpu, Shield, HeartPulse, Wifi, HardDrive, Lock, Loader2, CheckCircle2, Package, Gpu, Search } from 'lucide-svelte';
+	import * as Tooltip from '$lib/components/ui/tooltip';
+	import { currentEnvironment } from '$lib/stores/environment';
 	import { Badge } from '$lib/components/ui/badge';
 	import AutoUpdateSettings from './AutoUpdateSettings.svelte';
 	import type { VulnerabilityCriteria } from '$lib/components/VulnerabilityCriteriaSelector.svelte';
@@ -279,6 +281,46 @@
 	// GPU device ID input
 	let gpuDeviceIdInput = $state('');
 	let customRuntimeInput = $state('');
+
+	// Find free port
+	let findingFreePort = $state(false);
+
+	async function findFreePort(index: number) {
+		findingFreePort = true;
+		try {
+			const envParam = $currentEnvironment ? `?env=${$currentEnvironment.id}` : '';
+			const res = await fetch(`/api/containers${envParam}`);
+			if (!res.ok) return;
+
+			const containers: any[] = await res.json();
+			const usedPorts = new Set<number>();
+			for (const c of containers) {
+				if (c.ports) {
+					for (const p of c.ports) {
+						const pub = p.PublicPort || p.publicPort;
+						if (pub) usedPorts.add(pub);
+					}
+				}
+			}
+			// Also consider ports already typed in the form
+			for (let i = 0; i < portMappings.length; i++) {
+				if (i !== index && portMappings[i].hostPort) {
+					usedPorts.add(parseInt(portMappings[i].hostPort));
+				}
+			}
+
+			const startFrom = parseInt(portMappings[index].hostPort) || 8080;
+			let port = startFrom;
+			while (usedPorts.has(port) && port < 65535) port++;
+			if (port <= 65535) {
+				portMappings[index].hostPort = String(port);
+			}
+		} catch {
+			// Silently fail
+		} finally {
+			findingFreePort = false;
+		}
+	}
 
 	// Helper functions for form
 	function addPortMapping() {
@@ -856,9 +898,22 @@
 		<div class="space-y-2">
 			{#each portMappings as mapping, index}
 				<div class="flex gap-2 items-center">
-					<div class="flex-1 relative">
+					<div class="flex-1 relative group/port">
 						<span class="absolute -top-2 left-2 text-2xs text-muted-foreground bg-background px-1">Host</span>
 						<Input bind:value={mapping.hostPort} type="number" class="h-9" />
+						<button
+							type="button"
+							class="absolute right-1.5 top-1/2 -translate-y-1/2 text-muted-foreground/50 hover:text-primary transition-colors opacity-0 group-hover/port:opacity-100"
+							onclick={() => findFreePort(index)}
+							disabled={findingFreePort}
+							title="Find next available Docker port"
+						>
+							{#if findingFreePort}
+								<Loader2 class="w-3.5 h-3.5 animate-spin" />
+							{:else}
+								<Search class="w-3.5 h-3.5" />
+							{/if}
+						</button>
 					</div>
 					<div class="flex-1 relative">
 						<span class="absolute -top-2 left-2 text-2xs text-muted-foreground bg-background px-1">Container</span>
@@ -882,6 +937,10 @@
 				</div>
 			{/each}
 		</div>
+		<p class="text-2xs text-muted-foreground/60 flex items-center gap-1">
+			<Search class="w-3 h-3" />
+			Hover the host port field and click the search icon to find the next available port. Only checks Docker-published ports.
+		</p>
 	</div>
 
 	<!-- Volume Mappings -->

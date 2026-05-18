@@ -77,7 +77,9 @@ export interface ContainerDetail {
 	networks: Array<{ name: string; ipAddress: string }>;
 	volumeCount: number;
 	restartCount: number;
+	exitCode?: number;
 	created: number;
+	labels: Record<string, string>;
 }
 
 /**
@@ -1545,6 +1547,12 @@ export async function listComposeStacks(envId?: number | null): Promise<ComposeS
 	const result: ComposeStackInfo[] = Array.from(stacks.entries()).map(([name, containerIds]) => {
 		const stackContainers = containers.filter((c) => containerIds.has(c.id));
 		const runningCount = stackContainers.filter((c) => c.state === 'running').length;
+		// Containers that exited with code 0 are "completed" (e.g., init/migration containers)
+		// and should not count against stack health
+		const completedCount = stackContainers.filter((c) =>
+			c.state === 'exited' && c.exitCode === 0
+		).length;
+		const activeTotal = stackContainers.length - completedCount;
 
 		const containerDetails: ContainerDetail[] = stackContainers
 			.map((c) => {
@@ -1580,7 +1588,9 @@ export async function listComposeStacks(envId?: number | null): Promise<ComposeS
 					networks,
 					volumeCount,
 					restartCount: c.restartCount || 0,
-					created: c.created
+					exitCode: c.exitCode,
+					created: c.created,
+					labels: c.labels || {}
 				};
 			})
 			.sort((a, b) => a.service.localeCompare(b.service));
@@ -1590,11 +1600,13 @@ export async function listComposeStacks(envId?: number | null): Promise<ComposeS
 			containers: Array.from(containerIds),
 			containerDetails,
 			status:
-				runningCount === stackContainers.length
-					? 'running'
-					: runningCount === 0
-						? 'stopped'
-						: 'partial'
+				activeTotal === 0
+					? 'stopped'
+					: runningCount >= activeTotal
+						? 'running'
+						: runningCount === 0
+							? 'stopped'
+							: 'partial'
 		};
 	});
 

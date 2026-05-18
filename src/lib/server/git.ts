@@ -109,6 +109,10 @@ if (!existsSync(GIT_REPOS_DIR)) {
 	mkdirSync(GIT_REPOS_DIR, { recursive: true });
 }
 
+export function getGitReposDir(): string {
+	return GIT_REPOS_DIR;
+}
+
 /**
  * Redact all env var values for safe logging. Only key names are preserved.
  */

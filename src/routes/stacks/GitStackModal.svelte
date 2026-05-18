@@ -943,14 +943,18 @@
 									{/if}
 								</Button>
 							{/if}
-							<Button
-								variant="outline"
-								size="sm"
-								onclick={() => formWebhookSecret = generateWebhookSecret()}
-								title="Generate new secret"
-							>
-								<RefreshCcw class="w-4 h-4" />
-							</Button>
+							<Tooltip.Root>
+								<Tooltip.Trigger>
+									<Button
+										variant="outline"
+										size="sm"
+										onclick={() => formWebhookSecret = generateWebhookSecret()}
+									>
+										<Key class="w-4 h-4" />
+									</Button>
+								</Tooltip.Trigger>
+								<Tooltip.Content>Generate secret</Tooltip.Content>
+							</Tooltip.Root>
 						</div>
 					</div>
 					{#if !gitStack}

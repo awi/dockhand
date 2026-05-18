@@ -74,6 +74,8 @@ export interface GeneralSettings {
 	editorFont: string;
 	// Compact ports
 	compactPorts: boolean;
+	// Show exposed (internal) ports
+	showExposedPorts: boolean;
 	// Log timestamp formatting
 	formatLogTimestamps: boolean;
 	// External stack paths
@@ -104,6 +106,7 @@ const DEFAULT_SETTINGS: Omit<GeneralSettings, 'scheduleRetentionDays' | 'eventRe
 	eventPollInterval: 60000,
 	metricsCollectionInterval: 30000,
 	compactPorts: false,
+	showExposedPorts: false,
 	formatLogTimestamps: false,
 	lightTheme: 'default',
 	darkTheme: 'default',
@@ -186,6 +189,7 @@ export const GET: RequestHandler = async ({ cookies }) => {
 			terminalFont,
 			editorFont,
 			compactPorts,
+			showExposedPorts,
 			formatLogTimestamps,
 			externalStackPaths,
 			primaryStackLocation,
@@ -223,6 +227,7 @@ export const GET: RequestHandler = async ({ cookies }) => {
 			getSetting('theme_terminal_font'),
 			getSetting('theme_editor_font'),
 			getSetting('compact_ports'),
+			getSetting('show_exposed_ports'),
 			getSetting('format_log_timestamps'),
 			getExternalStackPaths(),
 			getPrimaryStackLocation(),
@@ -262,6 +267,7 @@ export const GET: RequestHandler = async ({ cookies }) => {
 			terminalFont: terminalFont ?? DEFAULT_SETTINGS.terminalFont,
 			editorFont: editorFont ?? DEFAULT_SETTINGS.editorFont,
 			compactPorts: compactPorts ?? DEFAULT_SETTINGS.compactPorts,
+			showExposedPorts: showExposedPorts ?? DEFAULT_SETTINGS.showExposedPorts,
 			formatLogTimestamps: formatLogTimestamps ?? DEFAULT_SETTINGS.formatLogTimestamps,
 			externalStackPaths,
 			primaryStackLocation,
@@ -286,7 +292,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 
 	try {
 		const body = await request.json();
-		const { confirmDestructive, showStoppedContainers, highlightUpdates, timeFormat, dateFormat, downloadFormat, defaultGrypeArgs, defaultTrivyArgs, scheduleRetentionDays, eventRetentionDays, scheduleCleanupCron, eventCleanupCron, scheduleCleanupEnabled, eventCleanupEnabled, scannerCleanupCron, scannerCleanupEnabled, logBufferSizeKb, defaultTimezone, eventCollectionMode, eventPollInterval, metricsCollectionInterval, lightTheme, darkTheme, font, fontSize, gridFontSize, terminalFont, editorFont, compactPorts, formatLogTimestamps, externalStackPaths, primaryStackLocation, defaultGrypeImage, defaultTrivyImage, defaultComposeTemplate, labelFilterMode } = body;
+		const { confirmDestructive, showStoppedContainers, highlightUpdates, timeFormat, dateFormat, downloadFormat, defaultGrypeArgs, defaultTrivyArgs, scheduleRetentionDays, eventRetentionDays, scheduleCleanupCron, eventCleanupCron, scheduleCleanupEnabled, eventCleanupEnabled, scannerCleanupCron, scannerCleanupEnabled, logBufferSizeKb, defaultTimezone, eventCollectionMode, eventPollInterval, metricsCollectionInterval, lightTheme, darkTheme, font, fontSize, gridFontSize, terminalFont, editorFont, compactPorts, showExposedPorts, formatLogTimestamps, externalStackPaths, primaryStackLocation, defaultGrypeImage, defaultTrivyImage, defaultComposeTemplate, labelFilterMode } = body;
 
 		if (confirmDestructive !== undefined) {
 			await setSetting('confirm_destructive', confirmDestructive);
@@ -390,6 +396,9 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		if (compactPorts !== undefined) {
 			await setSetting('compact_ports', compactPorts);
 		}
+		if (showExposedPorts !== undefined) {
+			await setSetting('show_exposed_ports', showExposedPorts);
+		}
 		if (formatLogTimestamps !== undefined) {
 			await setSetting('format_log_timestamps', formatLogTimestamps);
 		}
@@ -451,6 +460,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			terminalFontVal,
 			editorFontVal,
 			compactPortsVal,
+			showExposedPortsVal,
 			formatLogTimestampsVal,
 			externalStackPathsVal,
 			primaryStackLocationVal,
@@ -488,6 +498,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			getSetting('theme_terminal_font'),
 			getSetting('theme_editor_font'),
 			getSetting('compact_ports'),
+			getSetting('show_exposed_ports'),
 			getSetting('format_log_timestamps'),
 			getExternalStackPaths(),
 			getPrimaryStackLocation(),
@@ -527,6 +538,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 			terminalFont: terminalFontVal ?? DEFAULT_SETTINGS.terminalFont,
 			editorFont: editorFontVal ?? DEFAULT_SETTINGS.editorFont,
 			compactPorts: compactPortsVal ?? DEFAULT_SETTINGS.compactPorts,
+			showExposedPorts: showExposedPortsVal ?? DEFAULT_SETTINGS.showExposedPorts,
 			formatLogTimestamps: formatLogTimestampsVal ?? DEFAULT_SETTINGS.formatLogTimestamps,
 			externalStackPaths: externalStackPathsVal,
 			primaryStackLocation: primaryStackLocationVal,

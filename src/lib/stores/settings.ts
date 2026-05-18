@@ -30,6 +30,7 @@ export interface AppSettings {
 	eventPollInterval: number;
 	metricsCollectionInterval: number;
 	compactPorts: boolean;
+	showExposedPorts: boolean;
 	formatLogTimestamps: boolean;
 	externalStackPaths: string[];
 	primaryStackLocation: string | null;
@@ -62,6 +63,7 @@ const DEFAULT_SETTINGS: AppSettings = {
 	eventPollInterval: 60000,
 	metricsCollectionInterval: 30000,
 	compactPorts: false,
+	showExposedPorts: false,
 	formatLogTimestamps: false,
 	externalStackPaths: [],
 	primaryStackLocation: null,
@@ -125,6 +127,7 @@ function createSettingsStore() {
 					eventPollInterval: settings.eventPollInterval ?? DEFAULT_SETTINGS.eventPollInterval,
 					metricsCollectionInterval: settings.metricsCollectionInterval ?? DEFAULT_SETTINGS.metricsCollectionInterval,
 					compactPorts: settings.compactPorts ?? DEFAULT_SETTINGS.compactPorts,
+					showExposedPorts: settings.showExposedPorts ?? DEFAULT_SETTINGS.showExposedPorts,
 					formatLogTimestamps: settings.formatLogTimestamps ?? DEFAULT_SETTINGS.formatLogTimestamps,
 					externalStackPaths: settings.externalStackPaths ?? DEFAULT_SETTINGS.externalStackPaths,
 					primaryStackLocation: settings.primaryStackLocation ?? DEFAULT_SETTINGS.primaryStackLocation,
@@ -174,6 +177,7 @@ function createSettingsStore() {
 					eventPollInterval: updatedSettings.eventPollInterval ?? DEFAULT_SETTINGS.eventPollInterval,
 					metricsCollectionInterval: updatedSettings.metricsCollectionInterval ?? DEFAULT_SETTINGS.metricsCollectionInterval,
 					compactPorts: updatedSettings.compactPorts ?? DEFAULT_SETTINGS.compactPorts,
+					showExposedPorts: updatedSettings.showExposedPorts ?? DEFAULT_SETTINGS.showExposedPorts,
 					formatLogTimestamps: updatedSettings.formatLogTimestamps ?? DEFAULT_SETTINGS.formatLogTimestamps,
 					externalStackPaths: updatedSettings.externalStackPaths ?? DEFAULT_SETTINGS.externalStackPaths,
 					primaryStackLocation: updatedSettings.primaryStackLocation ?? DEFAULT_SETTINGS.primaryStackLocation,
@@ -358,6 +362,13 @@ function createSettingsStore() {
 			update((current) => {
 				const newSettings = { ...current, compactPorts: value };
 				saveSettings({ compactPorts: value });
+				return newSettings;
+			});
+		},
+		setShowExposedPorts: (value: boolean) => {
+			update((current) => {
+				const newSettings = { ...current, showExposedPorts: value };
+				saveSettings({ showExposedPorts: value });
 				return newSettings;
 			});
 		},
